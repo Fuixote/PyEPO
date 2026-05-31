@@ -17,6 +17,14 @@ from run import utils
 from run import train
 from run import eval
 
+
+def append_result_row(df, row):
+    row_df = pd.DataFrame([row], columns=df.columns)
+    if df.empty:
+        return row_df
+    return pd.concat([df, row_df], ignore_index=True)
+
+
 def pipeline(config):
     # shortest path
     if config.prob == "sp":
@@ -79,7 +87,7 @@ def pipeline(config):
         epoch = 0 if config.mthd == "2s" else config.epoch
         row = {"True SPO":truespo, "Unamb SPO":unambspo, "MSE":mse,
                "Elapsed":elapsed, "Epochs":epoch}
-        df = df.append(row, ignore_index=True)
+        df = append_result_row(df, row)
         df.to_csv(save_path, index=False)
         # autosklean model info
         if config.mthd == "2s" and config.pred == "auto":
@@ -140,6 +148,13 @@ if __name__ == "__main__":
                         type=str,
                         default="./res",
                         help="path to save result")
+    parser.add_argument("--data-path",
+                        type=str,
+                        default="../data",
+                        help="path to fixed synthetic datasets")
+    parser.add_argument("--fixed-data",
+                        action="store_true",
+                        help="load fixed synthetic shortest-path data instead of generating in memory")
 
     # solver configuration
     parser.add_argument("--lan",
@@ -251,6 +266,7 @@ if __name__ == "__main__":
 
     # get configuration
     config = parser.parse_args()
+    config.fixed_data = config.fixed_data and config.prob == "sp"
 
     # run experiment pipeline
     pipeline(config)

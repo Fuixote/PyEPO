@@ -50,11 +50,25 @@ parser.add_argument("--expnum",
                     type=int,
                     default=10,
                     help="number of experiments")
+parser.add_argument("--path",
+                    type=str,
+                    default="../res",
+                    help="path to save result")
+parser.add_argument("--data-path",
+                    type=str,
+                    default="../data",
+                    help="path to fixed synthetic datasets")
+parser.add_argument("--no-fixed-data",
+                    action="store_true",
+                    help="generate synthetic data in memory instead of loading fixed datasets")
 setting = parser.parse_args()
 
 # get config
 config = configs[setting.prob][setting.mthd]
 config.expnum = setting.expnum
+config.path = setting.path
+config.data_path = setting.data_path
+config.fixed_data = (setting.prob == "sp") and (not setting.no_fixed_data)
 if setting.prob == "sp":
     config.grid = setting.spgrid
 if setting.prob == "ks":

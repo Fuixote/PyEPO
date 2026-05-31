@@ -10,6 +10,7 @@ from torch.utils.data import Dataset
 import torch
 
 import pyepo
+from run import fixed_sp_data
 
 def getSavePath(config):
     """
@@ -81,6 +82,10 @@ def genData(config):
     """
     generate synthetic data
     """
+    if config.prob == "sp" and getattr(config, "fixed_data", False):
+        print("Loading fixed synthetic data...")
+        return fixed_sp_data.load_split_for_config(config)
+
     print("Generating synthetic data...")
     # shortest path
     if config.prob == "sp":
@@ -146,10 +151,16 @@ def buildDataSet(data, model, config):
     """
     build Pytorch DataSet
     """
-    x, c = data
-    # data split
-    x_train, x_test, c_train, c_test = train_test_split(x, c, test_size=1000,
-                                                        random_state=config.seed)
+    if isinstance(data, fixed_sp_data.SplitDataset):
+        x_train = data.x_train
+        c_train = data.c_train
+        x_test = data.x_test
+        c_test = data.c_test
+    else:
+        x, c = data
+        # data split
+        x_train, x_test, c_train, c_test = train_test_split(x, c, test_size=1000,
+                                                            random_state=config.seed)
     # build data set
     if config.rel:
         print("Building relaxation model...")

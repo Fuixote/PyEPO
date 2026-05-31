@@ -13,6 +13,7 @@ import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
 plt.style.reload_library()
+import scienceplots
 plt.style.use("science")
 from matplotlib import patheffects as path_effects
 from matplotlib import ticker
@@ -23,7 +24,7 @@ from run import utils
 from config import configs
 
 
-def getConfig(prob):
+def getConfig(prob, path=None):
     config = {}
     config["auto"] = configs[prob]["auto"]
     config["rf"]   = configs[prob]["rf"]
@@ -32,6 +33,9 @@ def getConfig(prob):
     config["dbb"]  = configs[prob]["dbb"]
     config["dpo"]  = configs[prob]["dpo"]
     config["lr"]   = configs[prob]["lr"]
+    if path is not None:
+        for c in config.values():
+            c.path = path
     return config
 
 
@@ -1019,6 +1023,10 @@ if __name__ == "__main__":
                         default="sp",
                         choices=["sp", "ks", "tsp"],
                         help="problem type")
+    parser.add_argument("--path",
+                        type=str,
+                        default="../res",
+                        help="root directory for experiment result CSV files")
 
     # get plot setting
     setting = parser.parse_args()
@@ -1027,7 +1035,7 @@ if __name__ == "__main__":
     # performance comparison
     if setting.plot == "cmp":
         # get config
-        config = getConfig(setting.prob)
+        config = getConfig(setting.prob, setting.path)
         # varying setting
         confset = {"data":[100, 1000, 5000],
                    "noise":[0.0, 0.5]}
@@ -1039,7 +1047,7 @@ if __name__ == "__main__":
     # relaxation
     if setting.plot == "rel":
         # get config
-        config = getConfig(setting.prob)
+        config = getConfig(setting.prob, setting.path)
         if setting.prob == "ks":
             # add relaxation
             config["spo rel"] = deepcopy(config["spo"])
@@ -1103,7 +1111,7 @@ if __name__ == "__main__":
     # regularization
     if setting.plot == "reg":
         # get config
-        config = getConfig(setting.prob)
+        config = getConfig(setting.prob, setting.path)
         # delete 2s
         del config["rf"]
         del config["auto"]
@@ -1122,7 +1130,7 @@ if __name__ == "__main__":
     # regularization
     if setting.plot == "trd":
         # get config
-        config = getConfig(setting.prob)
+        config = getConfig(setting.prob, setting.path)
         # delete dpo
         del config["dpo"]
         # add relaxation
